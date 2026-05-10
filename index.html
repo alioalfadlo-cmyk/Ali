@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الرياضيات - علي الفضل</title>
+    <style>
+        :root {
+            --bg: #000000; 
+            --card: rgba(0, 25, 30, 0.9);
+            --neon: #00ffff; /* تركوازي فاقع */
+            --accent: #f59e0b; /* برتقالي */
+            --success: #00ff88;
+            --error: #ff3333;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* شريط التقدم */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            z-index: 1000;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--neon);
+            box-shadow: 0 0 15px var(--neon);
+            transition: width 0.5s ease;
+        }
+
+        /* خلفية الأشكال */
+        .math-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .geo-shape {
+            position: absolute;
+            color: rgba(0, 255, 255, 0.1);
+            pointer-events: none;
+            animation: float-shapes 25s linear infinite;
+        }
+
+        @keyframes float-shapes {
+            from { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            z-index: 10;
+        }
+
+        .user-name {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--neon);
+            text-shadow: 0 0 10px var(--neon);
+        }
+
+        .class-tag {
+            font-size: 20px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .quiz-wrapper {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 50px;
+            z-index: 5;
+        }
+
+        .question-card {
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-right: 4px solid var(--neon);
+            padding-right: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        button {
+            padding: 16px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(0, 255, 255, 0.03);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+            text-align: right;
+            display: flex;
+            align-items: center;
+        }
+
+        button:hover:not(:disabled) {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: var(--neon);
+            transform: scale(1.02);
+        }
+
+        /* تنسيق حرف الخيار (أ، ب، ج، د) */
+        .opt-letter {
+            background: var(--neon);
+            color: #000;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        button.correct { background: var(--success) !important; color: #000; border-color: #00ff88; }
+        button.correct .opt-letter { background: #000; color: var(--success); }
+
+        button.wrong { background: var(--error) !important; border-color: #ff3333; }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px dashed var(--accent);
+            border-radius: 10px;
+            color: var(--accent);
+            display: none;
+            font-size: 15px;
+        }
+
+        #finish-btn {
+            display: none;
+            width: 100%;
+            padding: 20px;
+            background: var(--neon);
+            color: #000;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon);
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card);
+            border-radius: 30px;
+            border: 2px solid var(--neon);
+        }
+
+        footer {
+            padding: 30px;
+            color: var(--neon);
+            font-weight: bold;
+            opacity: 0.6;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-container"><div class="progress-bar" id="pbar"></div></div>
+    <div class="math-bg" id="bg"></div>
+
+    <header>
+        <div class="user-name">علي محمد الفضل</div>
+        <div class="class-tag">شعبة 202</div>
+    </header>
+
+    <div class="quiz-wrapper" id="quiz-box">
+        <div id="questions-list"></div>
+        <button id="finish-btn">🏆 عرض النتيجة النهائية</button>
+    </div>
+
+    <div class="quiz-wrapper result-screen" id="result-box">
+        <h1 style="color: #fff;">أبدعت يا علي!</h1>
+        <div style="font-size: 80px; color: var(--neon); font-weight: 900; margin: 20px 0;">20 / 20</div>
+        <button onclick="location.reload()" style="background:var(--accent); color:#000; border:none; padding:15px 40px; border-radius:10px; font-size:18px; cursor:pointer;">إعادة الاختبار</button>
+    </div>
+
+    <footer>
+        DESIGNED BY ALI MOHAMMED AL-FADHAL
+    </footer>
+
+    <script>
+        // الخلفية المتحركة
+        const shapes = ['×', '÷', '√', 'π', 'Σ', '∆', '∫', '□', '⬡', 'x²', 'log', '+', '=', 'sin'];
+        const bg = document.getElementById('bg');
+        for(let i=0; i<50; i++){
+            const s = document.createElement('div');
+            s.className = 'geo-shape';
+            s.innerText = shapes[Math.floor(Math.random()*shapes.length)];
+            s.style.left = Math.random()*100 + 'vw';
+            s.style.fontSize = (Math.random()*30 + 15) + 'px';
+            s.style.animationDelay = Math.random()*25 + 's';
+            bg.appendChild(s);
+        }
+
+        const rawData = [
+            { q: "ما الخاصية الموضحة في: a + b = b + a ؟", o: ["التبديل", "التجميع", "التوزيع", "المحايد"], h: "لاحظ أننا قمنا بتبديل أماكن الأرقام فقط." },
+            { q: "ما النظير الضربي للعدد 3؟", o: ["1/3", "-3", "0", "1"], h: "النظير الضربي هو قلب الكسر (مقلوب العدد)." },
+            { q: "أي مما يلي يمثل عددًا غير نسبي؟", o: ["√2", "0.5", "4", "2/3"], h: "الجذور التي ليس لها ناتج صحيح هي أعداد غير نسبية." },
+            { q: "مجموعة الأعداد (1, 2, 3...) تسمى الأعداد:", o: ["الطبيعية", "الكلية", "الصحيحة", "النسبية"], h: "تبدأ من 1، لذا فهي طبيعية." },
+            { q: "ما رتبة المصفوفة التي تحتوي صفين و4 أعمدة؟", o: ["2x4", "4x2", "2x2", "4x4"], h: "الرتبة تكتب: عدد الصفوف × عدد الأعمدة." },
+            { q: "المصفوفة التي قطرها الرئيسي 1 والباقي أصفار هي:", o: ["الوحدة", "الصفرية", "المربعة", "المستطيلة"], h: "تسمى مصفوفة الوحدة." },
+            { q: "قيمة المحددة لـ [[1, 2], [3, 4]] هي:", o: ["-2", "2", "10", "4"], h: "(1×4) - (2×3) = 4 - 6 = -2." },
+            { q: "إذا كانت f(x) = 2x + 5، فإن f(3) تساوي:", o: ["11", "8", "10", "6"], h: "عوض: 2(3) + 5 = 6 + 5 = 11." },
+            { q: "مجال الدالة f(x) = √x هو:", o: ["x ≥ 0", "R", "الأعداد السالبة", "x < 0"], h: "الجذر التربيعي لا يقبل القيم السالبة في R." },
+            { q: "قيمة i² تساوي:", o: ["-1", "1", "i", "0"], h: "تعريف الوحدة التخيلية المربعة هو -1." },
+            { q: "ما هو مرافق العدد المركب 3 + 2i؟", o: ["3 - 2i", "-3 - 2i", "2 + 3i", "5i"], h: "نعكس إشارة الجزء التخيلي فقط." },
+            { q: "حل المعادلة x² + 1 = 0 هو:", o: ["±i", "±1", "0", "لا يوجد حل"], h: "x² = -1، إذن x = ±√-1 وهو ±i." },
+            { q: "درجة كثير الحدود x³ + 5x² + 2 هي:", o: ["3", "1", "2", "5"], h: "الدرجة هي أعلى أس في المتغير." },
+            { q: "عدد أصفار الدالة من الدرجة الرابعة هو:", o: ["4", "2", "1", "0"], h: "عدد الأصفار يساوي درجة الدالة." },
+            { q: "قيمة log2(8) تساوي:", o: ["3", "2", "4", "8"], h: "لأن 2³ = 8." },
+            { q: "المتتابعة 5, 10, 15, 20 هي متتابعة:", o: ["حسابية", "هندسية", "تباعدية", "لا شيء"], h: "نضيف 5 في كل مرة (فرق ثابت)." },
+            { q: "أساس المتتابعة الهندسية 3, 6, 12 هو:", o: ["2", "3", "4", "6"], h: "نقسم 6 على 3، الناتج 2." },
+            { q: "مجموع قياسات زوايا الشكل الرباعي:", o: ["360", "180", "270", "90"], h: "ضعف مجموع زوايا المثلث." },
+            { q: "المنطقة التي تحقق نظام المتباينات تسمى منطقة:", o: ["الحل", "الإحداثيات", "الصفر", "الاستبعاد"], h: "هي منطقة الحل الممكن." },
+            { q: "ما قيمة x في: 2x = 10؟", o: ["5", "2", "8", "12"], h: "نقسم 10 على 2." }
+        ];
+
+        const letters = ['أ', 'ب', 'ج', 'د'];
+
+        function shuffle(a){
+            for(let i=a.length-1; i>0; i--){
+                const j = Math.floor(Math.random()*(i+1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        const questions = rawData.map((q) => {
+            const correct = q.o[0];
+            const opts = shuffle([...q.o]);
+            return { ...q, o: opts, correct: correct };
+        });
+
+        const list = document.getElementById('questions-list');
+        questions.forEach((q, i) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <div class="question-text">سؤال ${i+1}: ${q.q}</div>
+                <div class="options-grid" id="grid-${i}">
+                    ${q.o.map((opt, idx) => `
+                        <button onclick="check(${i}, '${opt}', this)">
+                            <span class="opt-letter">${letters[idx]}</span>
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+                <div id="hint-${i}" class="explanation">💡 شرح مبسط: ${q.h}</div>
+            `;
+            list.appendChild(card);
+        });
+
+        let count = 0;
+        function check(idx, val, btn){
+            const hint = document.getElementById(`hint-${idx}`);
+            const btns = document.getElementById(`grid-${idx}`).querySelectorAll('button');
+
+            if(val === questions[idx].correct){
+                btn.classList.add('correct');
+                hint.style.display = 'none';
+                btns.forEach(b => b.disabled = true);
+                count++;
+                updateProgress();
+            } else {
+                btn.classList.add('wrong');
+                hint.style.display = 'block';
+                setTimeout(() => btn.classList.remove('wrong'), 800);
+            }
+
+            if(count === questions.length) document.getElementById('finish-btn').style.display = 'block';
+        }
+
+        function updateProgress(){
+            document.getElementById('pbar').style.width = (count / questions.length * 100) + '%';
+        }
+
+        document.getElementById('finish-btn').onclick = function(){
+            document.getElementById('quiz-box').style.display = 'none';
+            document.querySelector('header').style.display = 'none';
+            document.getElementById('result-box').style.display = 'block';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        };
+    </script>
+</body>
+</html>
